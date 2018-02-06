@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login process error</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+
+
+<p th:text="${loginErrorMessage}" ></p>
+<p>Or <a th:href="${urlGoogleAuthorizationStart}">Try Again</a></p>
+<p>Or go to the <a th:href="${urlLoginStatus}">Login Status</a> page</p>
+
+
+</body>
+</html>

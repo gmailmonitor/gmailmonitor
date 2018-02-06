@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Title</title>
+</head>
+
+
+<body>
+
+
+<img th:style="'float: left; margin-right: 100px;'" th:src="@{/img/appwarning.png}" width="100" height="auto"/>
+<span th:text="${'This application is undergoing verification by Google'}"></span> <br/>
+<span th:text="${'Until verification is complete, you will have to acknowledge this warning page from google'}"></span> <br/>
+<br/>
+<span th:text="${'For any concerns, I would advise any and all of the following:'}"></span> <br/>
+<span th:text="${'Contact me with any questions!  (If you are on this page, it is most likely because I referred you here and you have my contact information.)'}"></span> <br/>
+<span th:text="${'Examine the source code, including the GmailMessage class.  (Email contents and subject lines are not saved, but the sender (from:) field is needed to drive the Who Is Mailing Me page.'}"></span> <br/>
+<span th:text="${'Examine the permissions being requested on the OAuth consent screen'}"></span> <br/>
+<span th:text="${'As a shortcut for negating any concerns - feel free to use a throw-away Gmail account!'}"></span> <br/>
+<br/>
+
+Next Step: <a th:text="${'Login using your google account'}" th:href="${urlGoogleAuthorizationStart}"></a>
+
+
+</body>
+</html>

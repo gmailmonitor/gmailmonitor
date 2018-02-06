@@ -1,0 +1,137 @@
+group 'test.groupid'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+//apply plugin: 'maven' // Can be used to generate POM file
+
+sourceCompatibility = 1.8
+
+
+
+tasks.withType(org.springframework.boot.gradle.run.BootRunTask) {
+//    Required by included google libraries
+    environment('GOOGLE_APPLICATION_CREDENTIALS', 'src/main/resources/service_account_development.json')
+
+    // Jelastic hosted environment example
+    // environment('GOOGLE_APPLICATION_CREDENTIALS', '/conf/service_account_production.json')
+
+//    Required by application
+    environment('gmail_monitor_file_properties', 'development.properties')
+
+
+    systemProperties 'spring.output.ansi.enabled': 'always'
+
+}
+
+configurations {
+    // One of the Gmail API dependencies pulls in an old version of guava
+    runtime.exclude group: "com.google.guava", module: "guava-jdk5"
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE")
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'com.google.cloud', name: 'google-cloud-pubsub', version: '0.30.0-beta'
+
+
+    compile 'com.google.api-client:google-api-client:1.23.0'
+    compile 'com.google.apis:google-api-services-gmail:v1-rev72-1.23.0'
+
+
+    compile('com.google.oauth-client:google-oauth-client-jetty:1.23.0')
+            {
+                // Jetty dependency appears to conflict with tomcat in spring boot
+                exclude module: 'servlet-api'
+            }
+
+//    compile ('com.google.oauth-client:google-oauth-client-jetty:1.20.0')
+// {
+//        // Jetty dependency appears to conflict with tomcat in spring boot
+//        exclude module: 'servlet-api'
+//    }
+
+    // Logging
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-logging
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '1.5.9.RELEASE'
+
+
+
+    // Database
+    compile 'com.h2database:h2:1.3.176'
+    compile 'com.j256.ormlite:ormlite-jdbc:4.48'
+
+//    compile 'org.springframework.boot:spring-boot-starter'
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+    // compile("org.springframework.boot:spring-boot-devtools")
+
+    // Jackson
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.1'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version: '2.9.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.1'
+
+}
+
+//
+//apply plugin: 'java'
+//
+//sourceCompatibility = 1.5
+//version = '1.0'
+//
+//repositories {
+//    mavenCentral()
+//}
+//
+//dependencies {
+//    testCompile group: 'junit', name: 'junit', version: '4.11'
+//}
+//
+def backupDir = 'db_backup'
+def backupDirAppend
+
+task backupDb(type: Copy) {
+    from 'db'
+    into backupDir
+    include '*'
+
+    eachFile { fcp ->
+//        def dateStr = (new Date()).format("YYYY-MM-dd--HH-mm-ss");
+//        fcp.setRelativePath(new RelativePath(false, (new Date()).format("YYYY-MM-dd--HH-mm-ss")))
+        println 'getName was: ' + fcp.getName()
+        println 'getPath was: ' + fcp.getPath()
+        println 'Name was: ' + fcp.name
+        println 'Path was: ' + fcp.path
+        fcp.path = backupDirAppend + '/' + name
+        println 'getName is now: ' + fcp.getName()
+        println 'getPath is now: ' + fcp.getPath()
+        println 'Name is now: ' + fcp.name
+        println 'Path is now: ' + fcp.path
+    }
+}
+
+backupDb {}.doFirst {
+    backupDirAppend = (new Date()).format("YYYY-MM-dd--HH-mm-ss")
+    def dirToCreate = backupDir + '\\' + backupDirAppend
+    mkdir dirToCreate
+    println 'Backing Up Database, backup directory set to: ' + dirToCreate
+
+}
+
+backupDb {}.doLast {
+    println 'Backing Up Database to: ' + backupDir
+}

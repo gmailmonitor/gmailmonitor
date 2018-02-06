@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login Status</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+
+<p>Navigate to:
+    <a th:href="loginStatus">Login Status</a> -
+    <a th:href="chart">INBOX Changes</a> -
+    <a th:href="mailStats">Mail Stats</a>
+</p>
+
+<p>Login Status</p>
+
+<p th:if="${googleUserId}" th:text="${'You are logged in as: ' + googleUserId}" />
+<a th:if="${googleUserId}" th:text="${'Logout'}" th:href="${urlLogout}"></a>
+
+<p th:unless="${googleUserId}" th:text="${'You are Not logged in'}" />
+
+
+<a th:unless="${googleUserId}" th:text="${'Login using your google account'}" th:href="${urlGoogleAuthorizationStart}"></a>
+
+</body>
+</html>

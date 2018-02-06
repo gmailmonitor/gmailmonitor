@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Title</title>
+</head>
+
+<body>
+
+<span th:text="${'GmailMonitor - A multi-tiered web application leveraging Google public APIs to monitor, retrieve, persist, and present data to the user'}"></span> <br/>
+<br/>
+Examine the source code at <a th:href="${'https://github.com/gmailmonitor'}">GitHub</a><br/>
+<br/>
+<br/>
+<span th:style="'font-weight: bold;'" th:text="${'This project brings together the following components'}"></span><br/>
+<br/>
+<br/>
+3rd-Party APIs<br/>
+<br/>
+<a th:href="${'https://developers.google.com/identity/protocols/OAuth2'}">OAuth 2.0 with Google APIs</a> - The user authenticates with Google's servers, granting an access token to this application.  This application neither handles nor stores the user's account credentials.<br/>
+<a th:href="${'https://developers.google.com/gmail/api/'}">Gmail API</a> is called in order to obtain basic statistical information on the user's Inbox<br/>
+<a th:href="${'https://cloud.google.com/pubsub/docs/overview'}">Google Cloud Pub/Sub API</a> is leveraged in order to obtain realtime notification of user's mailbox updates<br/>
+<a th:href="${'https://developers.google.com/api-client-library/java/'}">Google API Client Library for Java</a> performs HTTP requests against Google REST APIs<br/>
+<br/>
+<br/>
+Persistence<br/>
+<br/>
+<a th:href="${'http://ormlite.com/'}">ORMLite</a> eliminates the need to write most SQL queries as String objects, while providing Object-Relational Mapping of database entities to Java classes.<br/>
+<a th:href="${'http://www.h2database.com/html/main.html'}">H2 Database Engine</a> - a lightweight SQL database engine, easily meets the storage needs of this application with minimal added complexity<br/>
+<br/>
+<br/>
+Front End<br/>
+<br/>
+<a th:href="${'https://d3js.org/'}">D3.js</a>(Data Driven Documents) to present data in chart format<br/>
+<a th:href="${'http://www.baeldung.com/thymeleaf-in-spring-mvc'}">Thymeleaf within Spring MVC</a>
+<a th:href="${'https://projects.spring.io/spring-boot/'}">Spring Boot with embedded Tomcat</a>
+<br/>
+<br/>
+<br/>
+Front End<br/>
+<br/>
+<a th:href="${'hhttps://fasterxml.github.io/jackson-databind/'}">jackson-databind by FasterXML</a> for easier translation between JSON and Java classes.<br/>
+<br/>
+<br/>
+<br/>
+<span th:text="${'Other (Misc.) Features'}"></span><br/>
+Database schema updates are implemented programmatically.  On startup, the database schema is automatically updated to the latest version.  This allows the application to be started with any version of the database.  No scripts to run manually.
+Externalized configuration using property files
+<br/>
+<br/>
+<br/>
+<a th:text="${'Get Started'}" th:href="${urlLoginPreNotice}"></a><br/>
+</body>
+</html>

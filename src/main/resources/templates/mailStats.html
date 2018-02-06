@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mail Stats Page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script type="text/javascript" src="/js/d3.v4.12.0.min.js"></script>
+</head>
+<body>
+
+<p>Navigate to:
+    <a th:href="loginStatus">Login Status</a> -
+    <a th:href="chart">INBOX Changes</a> -
+    <a th:href="mailStats">Mail Stats</a>
+</p>
+
+<span th:if="${googleUserId}" th:text="${'You are logged in as: '}"></span> <span  th:if="${googleUserId}" th:text="${googleUserId}" th:style="'font-weight: bold;'"></span> <br/>
+<br/>
+<span th:text="${'Last update for unread/total message counts: '}"></span> <span th:text="${labelUpdate}" th:style="'font-weight: bold;'"></span> <br/>
+<span th:text="${'Last update for message history events (added/removed/read/unread): '}" ></span> <span th:text="${historyUpdate}" th:style="'font-weight: bold;'"></span> <br/>
+<br/>
+<img th:style="'float: left;'" th:src="@{/img/chartdeltas.png}"/>
+<span th:text="${'This page shows who sends you the most mail over a given period of time.'}"></span><br/>
+<span th:text="${'Any message that made it to your INBOX will be counted here (even if it is later removed or deleted).'}"></span><br/>
+<br/>
+<span th:text="${'Next update in: ' + taskDelay?: 'Not Scheduled'}"></span> <a th:href="@{/taskUpdateMyStats}">Update My Stats Now</a><br/>
+
+
+<br/>
+
+<h2>Who Emails Me Most?</h2>
+<p>Show data up to the last... :
+    <a th:href="@{mailStats.html(statsTime=1)}">hour</a> -
+    <a th:href="@{mailStats.html(statsTime=24)}">day</a> -
+    <a th:href="@{mailStats.html(statsTime=168)}">week</a> -
+    <a th:href="@{mailStats.html(statsTime=720)}">month</a> -
+    <a th:href="mailStats.html">All</a>
+</p>
+
+<div th:if="${#lists.isEmpty(senderStats)}">
+    <span th:text="${'No one emailed you (to targeted mailbox labels) during this time interval'}"></span><br/>
+</div>
+
+<div th:if="${not #lists.isEmpty(senderStats)}">
+<table class="table table-striped">
+    <tr>
+        <th>Sender</th>
+        <th>Messages (#)</th>
+    </tr>
+    <tr th:each="nextPair : ${senderStats}">
+        <td th:text="${nextPair.key}"></td>
+        <td align="right" th:text="${nextPair.value}"></td>
+    </tr>
+</table>
+</div>
+
+
+
+</body>
+</html>

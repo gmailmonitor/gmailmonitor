@@ -1,0 +1,301 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chart Page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script type="text/javascript" src="/js/d3.v4.12.0.min.js"></script>
+</head>
+<body>
+
+<p>Navigate to:
+    <a th:href="loginStatus">Login Status</a> -
+    <a th:href="chart">INBOX Changes</a> -
+    <a th:href="mailStats">Mail Stats</a>
+</p>
+
+<span th:if="${googleUserId}" th:text="${'You are logged in as: '}"></span> <span  th:if="${googleUserId}" th:text="${googleUserId}" th:style="'font-weight: bold;'"></span> <br/>
+<br/>
+<span th:text="${'Last update for unread/total message counts: '}"></span> <span th:text="${labelUpdate}" th:style="'font-weight: bold;'"></span> <br/>
+<span th:text="${'Last update for message history events (added/removed/read/unread): '}" ></span> <span th:text="${historyUpdate}" th:style="'font-weight: bold;'"></span> <br/>
+<br/>
+<img th:style="'float: left;'" th:src="@{/img/chartdeltas.png}"/>
+<span th:text="${'It is recommended to perform at least 3-4 updates so that the chart data begins to take on a meaningful appearance!'}"></span><br/>
+<span th:text="${'Moving messages into or out of your INBOX, or flipping the read/unread flag, will also trigger updates in the background (refresh page to see results)'}"></span><br/>
+<span th:text="${'This can be accomplished by archiving / unarchiving existing messages, using the Mark Read/Unread feature, or the appearance of newly-received messages in the Inbox'}"></span><br/>
+<br/>
+<span th:text="${'Next update in: ' + taskDelay?: 'Not Scheduled'}"></span> <a th:href="@{/taskUpdateMyStats}">Update My Stats Now</a><br/>
+
+
+<h3 th:style="'clear: left;'">
+    <a name="s2">Unread vs Total messages in INBOX</a>
+</h3>
+<p>Show data up to the last...:
+    <a th:href="@{chart.html(chartTime=1)}">hour</a> -
+    <a th:href="@{chart.html(chartTime=24)}">day</a> -
+    <a th:href="@{chart.html(chartTime=168)}">week</a> -
+    <a th:href="@{chart.html(chartTime=720)}">month</a> -
+    <a th:href="chart.html">All</a>
+</p>
+
+
+<span th:style="'color:steelblue'" th:text="${'Total Messages'}"></span><span th:text="${' - '}"></span>
+<span th:style="'color:darkorange'" th:text="${'&uarr; Added'}"></span><span th:text="${' - '}"></span>
+<span th:style="'color:darkgreen'" th:text="${'&darr; Removed'}"></span><br/>
+<span th:style="'color:darkorange'" th:text="${'Unread Messages'}"></span><span th:text="${' - '}"></span>
+<span th:style="'color:darkred'" th:text="${'&uarr; Added'}"></span><span th:text="${' - '}"></span>
+<span th:style="'color:darkblue'" th:text="${'&darr; Removed'}"></span><br/>
+
+<canvas width="960" height="500"></canvas>
+
+        <script th:inline="javascript">
+            //<![CDATA[
+            "use strict";
+
+            var canvas = document.querySelector("canvas");
+            var context = canvas.getContext("2d");
+
+            var margin = {top: 20, right: 20, bottom: 30, left: 50};
+            var width = canvas.width - margin.left - margin.right;
+            var height = canvas.height - margin.top - margin.bottom;
+
+            var scaleX = d3.scaleTime().range([0, width]);
+            var scaleY = d3.scaleLinear().range([height, 0]);
+
+            var styleColors = {
+                totalMessages: 'steelblue',
+                totalAdded: 'darkorange',
+                totalRemoved: 'darkgreen',
+
+                unreadMessages: 'darkorange',
+                unreadAdded: 'darkred',
+                unreadRemoved: 'darkblue'
+            };
+
+            var lineAllMessages = d3.line()
+                .x(function(d) {
+//                    console.log('X rendering function');
+                    return scaleX(d.dateTimeMillis);
+                })
+                .y(function(d) {
+//                    console.log('Y rendering function');
+                    return scaleY(d.messageCount);
+                })
+                .curve(d3.curveLinear)
+                .context(context);
+
+            var lineUnreadMessages = d3.line()
+                .x(function(d) {
+//                    console.log('X rendering function');
+                    return scaleX(d.dateTimeMillis);
+                })
+                .y(function(d) {
+//                    console.log('Y rendering function');
+                    return scaleY(d.unreadCount);
+                })
+                .curve(d3.curveLinear)
+                .context(context);
+
+            var lineSegment = d3.line()
+                .x(function(d) {
+//                    console.log('X rendering function');
+                    return scaleX(d.x);
+                })
+                .y(function(d) {
+//                    console.log('Y rendering function');
+                    return scaleY(d.y);
+                })
+                .curve(d3.curveLinear)
+                .context(context);
+
+            // Can this be moved?
+            context.translate(margin.left, margin.top);
+
+            var messagesTotals;
+
+            var messagesAllAddedSegments;
+            var messagesAllRemovedSegments;
+            var messagesUnreadAddedSegments;
+            var messagesUnreadRemovedSegments;
+
+            var chartTime = [[${chartTime}]];
+            var dataUrl = "/data/combinedChart";
+            if (chartTime !== null) {
+                dataUrl = dataUrl + "/" + chartTime;
+            }
+
+            d3.json(dataUrl, function (error, data) {
+                console.log('post-request callback function');
+
+                if (error) {
+                    throw error;
+                }
+
+                messagesTotals = data.dataSeriesMessageCounts;
+                messagesAllAddedSegments = data.dataSeriesLabelChangeSegments.segmentsMessagesAdded;
+                messagesAllRemovedSegments = data.dataSeriesLabelChangeSegments.segmentsMessagesRemoved;
+                messagesUnreadAddedSegments = data.dataSeriesLabelChangeSegments.segmentsUnreadAdded;
+                messagesUnreadRemovedSegments = data.dataSeriesLabelChangeSegments.segmentsUnreadRemoved;
+
+                // Base the X and Y axis scale off of the data range of total count of all messages
+                var dataForXExtent = messagesTotals;
+                var xExtentBeforeExpand = d3.extent(dataForXExtent, function (d) {
+                    return d.dateTimeMillis;
+                });
+
+                var xAxisTimeInterval = xExtentBeforeExpand[1] - xExtentBeforeExpand[0];
+
+                xExtentBeforeExpand = [Math.max(0, xExtentBeforeExpand[0]) - (0.02 * xAxisTimeInterval), xExtentBeforeExpand[1] + (0.02 * xAxisTimeInterval)];
+                scaleX.domain(xExtentBeforeExpand);
+
+                console.log("X-scale values: " + scaleX.domain()[0] + " to " + scaleX.domain()[1]);
+
+                // Ensure there is no possible scenario where a line point or vertical segment escapes the y-scale of the graph
+                var allYValues = [];
+                data.dataSeriesMessageCounts.forEach(function(e) { allYValues.push(e.messageCount)});
+                data.dataSeriesMessageCounts.forEach(function(e) { allYValues.push(e.unreadCount)});
+                messagesAllAddedSegments.forEach(function(e) { allYValues.push(e[1].y)});
+                messagesAllRemovedSegments.forEach(function(e) { allYValues.push(e[1].y)});
+                messagesUnreadAddedSegments.forEach(function(e) { allYValues.push(e[1].y)});
+                messagesUnreadRemovedSegments.forEach(function(e) { allYValues.push(e[1].y)});
+                var yExtentBeforeExpand = d3.extent(allYValues);
+                yExtentBeforeExpand = [Math.max(0, yExtentBeforeExpand[0]-1) * 0.95, yExtentBeforeExpand[1] * 1.05 ];
+                scaleY.domain(yExtentBeforeExpand);
+
+
+                console.log("Y-scale values: " + scaleY.domain()[0] + " to " + scaleY.domain()[1]);
+
+
+//                scaleY.domain([10000, 20000]);
+
+                // With everything now configured, build the axes
+                xAxis();
+                yAxis();
+
+                // Messages with 'inbox' label
+                context.beginPath();
+                lineAllMessages(messagesTotals);
+                context.lineWidth = 2;
+                context.strokeStyle = styleColors.totalMessages;
+                context.stroke();
+
+                for (let pointPair of messagesAllAddedSegments) {
+                    context.beginPath();
+                    lineSegment(pointPair);
+                    context.lineWidth = 1;
+                    context.strokeStyle = styleColors.totalAdded;
+                    context.stroke();
+                }
+
+                for (let pointPair of messagesAllRemovedSegments) {
+                    context.beginPath();
+                    lineSegment(pointPair);
+                    context.lineWidth = 1;
+                    context.strokeStyle = styleColors.totalRemoved;
+                    context.stroke();
+                }
+
+                // Messages with 'unread' label
+                context.beginPath();
+                lineUnreadMessages(messagesTotals);
+                context.lineWidth = 2;
+                context.strokeStyle = styleColors.unreadMessages;
+                context.stroke();
+
+                for (let pointPair of messagesUnreadAddedSegments) {
+                    context.beginPath();
+                    lineSegment(pointPair);
+                    context.lineWidth = 1;
+                    context.strokeStyle = styleColors.unreadAdded;
+                    context.stroke();
+                }
+
+                for (let pointPair of messagesUnreadRemovedSegments) {
+                    //console.log(pointPair[0].x + "," + pointPair[0].y + '->' + pointPair[1].x + "," + pointPair[1].y);
+                    context.beginPath();
+                    lineSegment(pointPair);
+                    context.lineWidth = 1;
+                    context.strokeStyle = styleColors.unreadRemoved;
+                    context.stroke();
+                }
+            });
+
+            function xAxis() {
+                var tickCount = 10,
+                    tickSize = 6,
+                    ticks = scaleX.ticks(tickCount),
+                    tickFormat = scaleX.tickFormat();
+
+                context.beginPath();
+                ticks.forEach(function(d) {
+                    context.moveTo(scaleX(d), height);
+                    context.lineTo(scaleX(d), height + tickSize);
+                });
+                context.strokeStyle = "black";
+                context.stroke();
+
+                context.textAlign = "center";
+                context.textBaseline = "top";
+                ticks.forEach(function(d) {
+                    context.fillText(tickFormat(d), scaleX(d), height + tickSize);
+                });
+            }
+
+            function yAxis() {
+                var tickCount = 10,
+                    tickSize = 6,
+                    tickPadding = 3,
+                    ticks = scaleY.ticks(tickCount),
+                    tickFormat = scaleY.tickFormat(tickCount);
+
+                context.beginPath();
+                ticks.forEach(function (d) {
+                    context.moveTo(0, scaleY(d));
+                    context.lineTo(-6, scaleY(d));
+                });
+                context.strokeStyle = "black";
+                context.stroke();
+
+                context.beginPath();
+                context.moveTo(-tickSize, 0);
+                context.lineTo(0.5, 0);
+                context.lineTo(0.5, height);
+                context.lineTo(-tickSize, height);
+                context.strokeStyle = "black";
+                context.stroke();
+
+                context.textAlign = "right";
+                context.textBaseline = "middle";
+                ticks.forEach(function (d) {
+                    context.fillText(tickFormat(d), -tickSize - tickPadding, scaleY(d));
+                });
+
+                //Draw label for x-axis
+                context.save();
+//                context.rotate(-Math.PI / 2);
+                context.textAlign = "right";
+                context.textBaseline = "top";
+                context.font = "bold 12px sans-serif";
+                context.fillText("Date / Time Observed", 100, canvas.height - 35);
+                context.restore();
+
+
+                //Draw label for y-axis
+                context.save();
+                context.rotate(-Math.PI / 2);
+                context.textAlign = "right";
+                context.textBaseline = "top";
+                context.font = "bold 12px sans-serif";
+                context.fillText("Number of Messages", -10, 10);
+                context.restore();
+            }
+
+
+
+            //]]>
+        </script>
+        <br/>
+
+
+
+</body>
+</html>

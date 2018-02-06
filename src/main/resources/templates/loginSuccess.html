@@ -1,0 +1,16 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Post-Auth page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<p>Authentication with Google successful</p>
+<span th:text="${'Welcome '}" > </span><span th:text="${googleUserId}" th:style="'font-weight: bold;'"></span><span th:text="${', you have successfully logged in using your google account'}"></span> <br/>
+<br/>
+<span>From here, you can proceed to the <a th:href="${urlChart}">Chart</a> page and begin collecting mailbox updates</span>
+
+<p>There is also a simple <a th:href="${urlLoginStatus}">Login Status</a> page</p>
+
+</body>
+</html>
