@@ -27,9 +27,6 @@ public class SpringApplicationLauncher {
 
         // Must use this object's .class or this class's annotations may have no effect including @ComponentScan!
         SpringApplication app = new SpringApplication(getThisClass());
-
-        // app.addInitializers(new LoggingInitializer()); // TODO attempting to initialize early as a bean, to benefit from property replacement
-
         ConfigurableApplicationContext ctx = app.run(args);
     }
 

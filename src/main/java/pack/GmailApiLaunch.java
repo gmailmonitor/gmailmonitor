@@ -30,8 +30,8 @@ public class GmailApiLaunch {
 
     private static final Logger log = LoggerFactory.getLogger((new Object(){}).getClass().getEnclosingClass());
 
-    //TODO testing
-    @Autowired private ApplicationConfiguration applicationConfiguration;
+    // Uncomment if implicit dependencies is needed
+    // @Autowired private ApplicationConfiguration applicationConfiguration;
 
     public static final String SCHEMA_APP_NAME = "GMAIL_MAILBOX_STATS";
 
@@ -50,60 +50,8 @@ public class GmailApiLaunch {
 
     @PostConstruct
     public void postConstruct() throws Exception {
-
-
-
-        // TODO remove keys and secrets for posting on github
-
-        // TODO test recover from de-auth app token
-
-        // TODO display on UI
-        // TODO support a few pre-selected time ranges
-
-        // TODO see if permission set can be reduced to Labels only
-        // TODO upload to GitHub again
-
-        // TODO 401 Unauthorized on startup tasks should not prevent the application from starting
-
-
-        // TODO UI
-        // Use mailbox updates to obtain more granular unread/total counts
-        // Add high/low marks to stats
-        // Consider adding @JsonIgnore annotation to mixin
-
-        // todo remaining http endpoints should be REST
-
-
-        // TODO stop using System.out, user logger instead
-        // TODO implement multiple user accounts
-        // calculate messages added/removed over variable time granularity
-        // obtain message counts for specified time granularity
-
-
-        // TODO remove TODO's
-        // Split GmailService into operations which access the Gmail API vs operations which access the database.  Operations needing both should be run by a higher class?
-        // TODO table for application settings (columns: schemaname, settingname, settingvalue)
-
-        // TODO system generates multiple changes for the same date/time
-
-
-
-//        gmailService.printLargestSenderInfo(6); // Prepares and displays statistics
-//        GmailApiService.getMessageDetailsById("7209405991688");
-
-//        printLabelUpdateDiagnostics();
-
-        // Get a single History ID, for debugging purposes only
-
         // code to be tested on startup would go here
-
-        // List<History> historyOne = gmailService.getHistoryFrom(6440066 + "");
-        // log.info(historyOne);
-
-
         // specializedTasks();
-
-        // TODO hold off on doing any of this while mult-user is being implemented
         startupTasks();
     }
 

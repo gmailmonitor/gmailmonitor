@@ -31,8 +31,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-// TODO code dealing with time ranges would benefit from being updated to consistently use TimeUnit class
-
 @Component
 public class GmailDataService {
 
@@ -59,67 +57,7 @@ public class GmailDataService {
     }
 
 
-    //TODO check unused section
-    /////////////////////////////////////////////////////////////////
 
-    public Pair<Long, Long> getTimeRangeMillisFromDuration(long durationMillis) throws SQLException {
-        long timeRangeEnd = System.currentTimeMillis();
-        long timeRangeStart = timeRangeEnd - durationMillis;
-        return new Pair<Long, Long>(timeRangeStart, timeRangeEnd);
-    }
-
-    private GmailMessage getMessageByIdFromDatabase(String messageId) throws Exception {
-        GmailMessage gmailMessage = null;
-
-        HashMap<String, Object> queryMap = new HashMap<>();
-        queryMap.put(GmailMessage.FIELD_MESSAGE_ID, messageId);
-        final List<GmailMessage> messages = messageDao.queryForFieldValues(queryMap);
-
-        GmailMessage returnMessage = null;
-        if (messages.size() > 1) {
-            throw new Exception("Expected only one message in database with messageId: " + messageId);
-        } else if (messages.size() == 1) {
-            returnMessage = messages.get(0);
-        }
-
-        return returnMessage;
-    }
-
-    public void printLargestSenderInfo(int minimumNumberOfMessages) throws SQLException {
-        final List<GmailMessage> gmailMessages = messageDao.queryForAll();
-        HashMap<String, Integer> senderCountMap = new HashMap<>();
-
-        for (GmailMessage message : gmailMessages) {
-            final String key = message.getHeaderFrom();
-            if (!senderCountMap.containsKey(key)) {
-                senderCountMap.put(key, 1);
-            } else {
-                final Integer oldCount = senderCountMap.get(key);
-                senderCountMap.put(key, oldCount+1);
-            }
-        }
-
-        Stream<Map.Entry<String,Integer>> sorted =
-                senderCountMap.entrySet().stream()
-                        .filter(p -> p.getValue().compareTo(minimumNumberOfMessages) > 0)
-                        .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
-        final Object[] objects = sorted.toArray();
-        for (Object nextObject : objects) {
-            log.info(nextObject.toString());
-        }
-    }
-
-    // private BigInteger getLargestHistoryId(List<History> newHistoryEventsFromApi) {
-    //     BigInteger largestHistoryId = null;
-    //     for (History nextHistory : newHistoryEventsFromApi) {
-    //         BigInteger nextHistoryId = nextHistory.getId();
-    //
-    //         if (nextHistoryId.compareTo(largestHistoryId) > 0) {
-    //             largestHistoryId = nextHistoryId;
-    //         }
-    //     }
-    //     return largestHistoryId;
-    // }
 
 
 
@@ -263,8 +201,6 @@ public class GmailDataService {
                 historyDao.update(historyEventToUpdate);
                 historyEventsAlreadyPersisted++;
 
-                // TODO this is happening often enough, figure out if anything is being changed here
-                // TODO if nothing ever changes 1) determine why old history events are showing up, 2) remove call to populateEntityObjectFromApi
                 int hashAfter = historyEventToUpdate.hashCode();
                 if (hashBefore != hashAfter) {
                     log.warn("Unexpected:  Something changed for history event id: " + historyEventToUpdate.getHistoryId());
@@ -407,7 +343,6 @@ public class GmailDataService {
                 .and() // Only history events believed to occur after the user first authenticated
                 .not().eq(HistoryEvent.FIELD_STATUS_OBSERVED, HistoryEvent.FIELD_STATUS_OBSERVED__STATUS_OBSERVED_FIRSTUPDATE);
 
-        // todo debug log log.info("Query: " + HistoryEventStringQueryBuilder.prepareStatementString());
         List<HistoryEvent> results = HistoryEventStringQueryBuilder.query();
         return results;
     }
@@ -532,7 +467,6 @@ public class GmailDataService {
         // Order by
         gmailLabelUpdateStringQueryBuilder.orderBy(GmailLabelUpdate.FIELD_UPDATE_TIME_MILLIS, true);
 
-        // todo debug log log.info("Query: " + gmailLabelUpdateStringQueryBuilder.prepareStatementString());
         List<GmailLabelUpdate> results = gmailLabelUpdateStringQueryBuilder.query();
         return results;
     }
@@ -566,7 +500,6 @@ public class GmailDataService {
         // Group/Order By
         gmailLabelUpdateStringQueryBuilder.groupByRaw("bucket");
         gmailLabelUpdateStringQueryBuilder.orderByRaw("bucket");
-        // todo debug log log.info("Query: " + gmailLabelUpdateStringQueryBuilder.prepareStatementString());
         GenericRawResults<String[]> rawResults = gmailLabelUpdateStringQueryBuilder.queryRaw();
         List<String[]> sqlQueryResults = rawResults.getResults();
 
@@ -773,7 +706,7 @@ public class GmailDataService {
         return results.getResults();
     }
 
-
+    // Results Object, avoids anti-pattern 'output parameters' of method
     public class MessagesMergeResults {
         private int newAdded;
         private int existingUnchanged;
@@ -803,4 +736,66 @@ public class GmailDataService {
             return existingModified;
         }
     }
+
+    // unused code section
+    /////////////////////////////////////////////////////////////////
+
+    // public Pair<Long, Long> getTimeRangeMillisFromDuration(long durationMillis) throws SQLException {
+    //     long timeRangeEnd = System.currentTimeMillis();
+    //     long timeRangeStart = timeRangeEnd - durationMillis;
+    //     return new Pair<Long, Long>(timeRangeStart, timeRangeEnd);
+    // }
+    //
+    // private GmailMessage getMessageByIdFromDatabase(String messageId) throws Exception {
+    //     GmailMessage gmailMessage = null;
+    //
+    //     HashMap<String, Object> queryMap = new HashMap<>();
+    //     queryMap.put(GmailMessage.FIELD_MESSAGE_ID, messageId);
+    //     final List<GmailMessage> messages = messageDao.queryForFieldValues(queryMap);
+    //
+    //     GmailMessage returnMessage = null;
+    //     if (messages.size() > 1) {
+    //         throw new Exception("Expected only one message in database with messageId: " + messageId);
+    //     } else if (messages.size() == 1) {
+    //         returnMessage = messages.get(0);
+    //     }
+    //
+    //     return returnMessage;
+    // }
+    //
+    // public void printLargestSenderInfo(int minimumNumberOfMessages) throws SQLException {
+    //     final List<GmailMessage> gmailMessages = messageDao.queryForAll();
+    //     HashMap<String, Integer> senderCountMap = new HashMap<>();
+    //
+    //     for (GmailMessage message : gmailMessages) {
+    //         final String key = message.getHeaderFrom();
+    //         if (!senderCountMap.containsKey(key)) {
+    //             senderCountMap.put(key, 1);
+    //         } else {
+    //             final Integer oldCount = senderCountMap.get(key);
+    //             senderCountMap.put(key, oldCount+1);
+    //         }
+    //     }
+    //
+    //     Stream<Map.Entry<String,Integer>> sorted =
+    //             senderCountMap.entrySet().stream()
+    //                     .filter(p -> p.getValue().compareTo(minimumNumberOfMessages) > 0)
+    //                     .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+    //     final Object[] objects = sorted.toArray();
+    //     for (Object nextObject : objects) {
+    //         log.info(nextObject.toString());
+    //     }
+    // }
+
+    // private BigInteger getLargestHistoryId(List<History> newHistoryEventsFromApi) {
+    //     BigInteger largestHistoryId = null;
+    //     for (History nextHistory : newHistoryEventsFromApi) {
+    //         BigInteger nextHistoryId = nextHistory.getId();
+    //
+    //         if (nextHistoryId.compareTo(largestHistoryId) > 0) {
+    //             largestHistoryId = nextHistoryId;
+    //         }
+    //     }
+    //     return largestHistoryId;
+    // }
 }

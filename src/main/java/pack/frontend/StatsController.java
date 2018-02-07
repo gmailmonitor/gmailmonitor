@@ -67,8 +67,8 @@ public class StatsController {
 
 
         log.info("Request for stats with time window: " + statsTimeUrlParameter);
-        // TODO clean ///////////////////////////////////////////
 
+        // Code could be cleaned up
         model.addAttribute(ATTRIBUTE__CHART_TIME_WINDOW, statsTimeUrlParameter); // Used by template to set javascript variable for AJAX request
         model.addAttribute(AuthController.MODEL__GOOGLE_USER_ID_LOGGED_IN, userLoggedIn.getGoogleUserId());
 
@@ -100,31 +100,10 @@ public class StatsController {
             String delayMinutes = String.format("%.2f", (double) delaySeconds / 60);
             model.addAttribute(ATTRIBUTE__TASK_DELAY, delayMinutes + " min");
 
-            // TODO what does this do
-            // scheduledFuture.get(); // This one will be interesting
         }
 
         return TEMPLATE__STATS;
     }
-
-    // TODO Already mapped, change implementation or map to something else if we need this
-    // @RequestMapping("/taskUpdateMyStats")
-    // public String taskStartForMyStats(
-    //         @RequestHeader(value = "referer", required = false) final String refererUrl,
-    //         HttpSession session, Model model) {
-    //     Integer userIdLoggedIn = getUserIdLoggedIn(session); //Integer expected
-    //     if (userIdLoggedIn == null) {
-    //         log.info("User is not logged in, returning no stats data");
-    //         return "redirect:" + AuthController.PATH__OAUTH_START;
-    //     }
-    //
-    //     taskService.setUpdateForUser(userIdLoggedIn);
-    //     boolean startNowResult = taskService.taskStartSoon();
-    //
-    //     log.info("Reschedule for immediate execution:  success=" + startNowResult + " redirecting to: " + refererUrl);
-    //     return "redirect:" + refererUrl;
-    // }
-
 
     private Integer getUserIdLoggedIn(HttpSession session) {
         log.info("Session ID: " + session.getId());

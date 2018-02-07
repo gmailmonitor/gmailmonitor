@@ -51,10 +51,7 @@ public class AuthController {
 
     @RequestMapping(PATH__OAUTH_START)
     public String authStart(Model model) throws IOException {
-
-        //TODO replace test nonce
         addGoogleAuthStartUrl(model);
-
         return TEMPLATE__AUTH_START;
     }
 
@@ -86,30 +83,21 @@ public class AuthController {
         }
 
         // URL parameters are security-sensitive // Google advises consuming the parameters here and taking them off the URL
-
-        // TODO test case where user declines authorization
-
         String authorizedUserGoogleId = gmailApiService.receiveNewAccessCode(responseCode);
-
         userService.addUserWithGoogleId(authorizedUserGoogleId);  // Create user for this ID if one doesn't exist
-
         pubSubService.watchMailbox(authorizedUserGoogleId);  // Subscribe to mailbox updates for this user
-
         loginUserWithGoogleId(authorizedUserGoogleId, session); // Store logged-in status to session
-
 
         // Updates message counts (but history deltas cannot be updated until the mailbox actually changes)
         User newUser = userService.getUserWithGoogleUserId(authorizedUserGoogleId);
         taskService.setUpdateForUser(newUser.getId());
         taskService.taskStartSoon();
 
-
-        // TODO do something with nonce...?
-        // TODO Would 'forward' instead of 'redirect' do better in hiding the URL parameters?
         return "redirect:" + PATH__OAUTH_CALLBACK_DONE; // Redirect user to a message saying the login was successful
     }
 
     public void addGoogleAuthStartUrl(Model model) throws IOException {
+        // for improved security, generate and remember a real nonce
         String googleAuthorizationUrl = gmailApiService.getGoogleAuthorizationUrl("testNonce");
         model.addAttribute(MODEL__URL_GOOGLE_AUTH, googleAuthorizationUrl);
     }

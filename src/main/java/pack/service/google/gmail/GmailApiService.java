@@ -168,9 +168,7 @@ public class GmailApiService {
     }
 
 
-    //TODO which of these comments apply?
-    // * Build and return an authorized Gmail client pack.service.
-    // Build flow and trigger user authorization request.
+    // The Gmail object represents the service object through which Gmail API functions are performed
     public Gmail getGmailService(String googleUserId) throws IOException {
 
         if (isCredentialValid(googleUserId) == false) {

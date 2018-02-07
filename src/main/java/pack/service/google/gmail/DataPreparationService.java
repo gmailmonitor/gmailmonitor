@@ -119,7 +119,7 @@ public class DataPreparationService {
                         countUnreadAdded++;
                     }
                     if (labelsOnMessageAdded.contains(GmailDataService.LABEL_SPAM)) {
-                        // TODO consider tracking this at some point
+                        // consider tracking this at some point
                     }
                 }
             }

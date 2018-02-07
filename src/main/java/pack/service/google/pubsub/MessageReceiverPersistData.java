@@ -52,7 +52,7 @@ public class MessageReceiverPersistData implements MessageReceiver {
 
     @Override
     public void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
-        Dao<HistoryEvent, String> historyDao = daoOwner.getHistoryDao(); // TODO move to postConstruct
+        Dao<HistoryEvent, String> historyDao = daoOwner.getHistoryDao(); // move to postConstruct
 
         Map<String, String> attributesMap = message.getAttributesMap();
         // Expect attributes to be empty
@@ -156,7 +156,6 @@ public class MessageReceiverPersistData implements MessageReceiver {
             log.info("Unexpected - PubSub message data contains unexpected fields: " + otherProperties.keySet());
         }
 
-        // todo return JSON object here // dont remember why??? // todo next time mention why
         return pubSubMessageData;
     }
 

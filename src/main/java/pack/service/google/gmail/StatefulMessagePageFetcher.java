@@ -10,12 +10,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-// Handles the Gmail API querying for messages and getting the next page of results when requested.
+// Handles the Gmail API querying for messages and getting the next page of results as needed
 public class StatefulMessagePageFetcher {
 
     private static final Logger log = LoggerFactory.getLogger((new Object(){}).getClass().getEnclosingClass());
-
-    //TODO query is not used for now
 
     private final String labelId;
     private final Integer maximumMessages;
@@ -52,8 +50,8 @@ public class StatefulMessagePageFetcher {
 
         } else {
             // There is a "next" page, fetch it
-            // TODO what happens if label(e.g. inbox) changes between page fetches?
-            // TODO if pg1 messages are removed, would that cause some messages to be skipped when fetching pg2?
+            // Unclear what happens if label(e.g. inbox) changes between page fetches?
+            // ex: if pg1 messages are removed, would that cause some messages to be skipped when fetching pg2?
             String pageToken = lastResponse.getNextPageToken();
             lastResponse = gmailService.users().messages().list(userId).setLabelIds(Arrays.asList(labelId)).setPageToken(pageToken).execute();
         }

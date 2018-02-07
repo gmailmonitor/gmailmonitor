@@ -45,14 +45,10 @@ public class PubSubService {
     // * Global instance of the {@link FileDataStoreFactory}.
     private static FileDataStoreFactory DATA_STORE_FACTORY;
 
-    // TODO remove?
-    // private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    // private static HttpTransport HTTP_TRANSPORT;
-
     @Autowired MessageReceiverPersistData messageReceiver;
     @Autowired GmailApiService gmailApiService;
 
-    private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId(); // TODO what does this resolve to?
+    private static final String PROJECT_ID = ServiceOptions.getDefaultProjectId();
     private static final String API_ROLE_PUBLISH = "pubsub.publisher";
     private static final String API_GMAIL_SERVICE_ACCOUNT = "gmail-api-push@system.gserviceaccount.com"; // Account defined on google's side representing pub/sub functionality
 
@@ -144,7 +140,7 @@ public class PubSubService {
         labelIds.add("INBOX");
         watchRequest.setLabelIds(labelIds);
 
-        //TODO if re-run, consider using TopicName.create()
+        //if re-run, consider using TopicName.create()
         String fullTopicName = "projects/" + PROJECT_ID + "/topics/" + topicId;
         watchRequest.setTopicName(fullTopicName);
 
@@ -159,7 +155,7 @@ public class PubSubService {
             // Watch request completed, historyId: 6308287, expiration: 1508560031442
             log.info("Watch request completed, historyId: " + historyId + ", expiration: " + expiration);
         } catch (IOException e) {
-            // TODO This is where we would attempt to refresh token and retry, or give up and logout user
+            // This is where we would attempt to refresh token and retry, or give up and logout user
             // See if this happens again now that authentication settings have been changed
             // Google API should use the refresh token to obtain a new access token
             log.info("Exception setting up watch request: " + e.getMessage());
@@ -167,18 +163,18 @@ public class PubSubService {
 
     }
 
-    private void gmailGetLabels(Gmail gmailService, String user) throws IOException {
-        // Print the labels in the user's account.
-        ListLabelsResponse listResponse =
-                gmailService.users().labels().list(user).execute();
-        List<Label> labels = listResponse.getLabels();
-        if (labels.size() == 0) {
-            log.info("No labels found.");
-        } else {
-            log.info("Labels:");
-            for (Label label : labels) {
-                System.out.printf("- %s\n", label.getName());
-            }
-        }
-    }
+    // private void gmailGetLabels(Gmail gmailService, String user) throws IOException {
+    //     // Print the labels in the user's account.
+    //     ListLabelsResponse listResponse =
+    //             gmailService.users().labels().list(user).execute();
+    //     List<Label> labels = listResponse.getLabels();
+    //     if (labels.size() == 0) {
+    //         log.info("No labels found.");
+    //     } else {
+    //         log.info("Labels:");
+    //         for (Label label : labels) {
+    //             System.out.printf("- %s\n", label.getName());
+    //         }
+    //     }
+    // }
 }

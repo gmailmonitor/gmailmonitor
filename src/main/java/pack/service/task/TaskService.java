@@ -28,7 +28,7 @@ public class TaskService {
 
     private static final Logger log = LoggerFactory.getLogger((new Object(){}).getClass().getEnclosingClass());
 
-    public static final int SECONDS_BETWEEN_TASKS = 60 * 15; // TODO consider externalizing
+    public static final int TASK_INTERVAL__SECONDS = 60 * 15; // consider externalizing
 
     @Autowired private GmailService gmailService;
     @Autowired private GmailApiService gmailApiService;
@@ -67,12 +67,10 @@ public class TaskService {
             scheduledFuture.cancel(false);
 
         } else {
-            //TODO convert to trace log
             String message = String.format("Timer delay of %s too close to threshold value of %s or task has already started, will not attempt to cancel", delayUntilExecution, delayThresholdMs);
             log.info(message);
         }
 
-        //TODO convert to trace log
         boolean cancelled = scheduledFuture.isCancelled();
         boolean done = scheduledFuture.isDone(); // Even if cancelling is not possible, task may have already finished (depending on circumstances and re-scheduling strategy)
         String message = String.format("%sms remaining until task start, cancelled: %s, done: %s", delayUntilExecution, cancelled, done);
@@ -91,7 +89,7 @@ public class TaskService {
     // Cancel any already-scheduled task and create a new one set to start at a pre-determined delay
     // Return true if task delay was reset successfully
     public synchronized boolean taskResetTimer() {
-        return resetTimer(SECONDS_BETWEEN_TASKS);
+        return resetTimer(TASK_INTERVAL__SECONDS);
     }
 
     // Cancel any already-scheduled task and create a new one set to start (almost) immediately
@@ -184,8 +182,8 @@ public class TaskService {
                 // if our credential is invalid there is no way to re-obtain authorization until the user is present at the UI
                 performApiUpdateTasksForUser(user);
 
-                log.info("Finished Runnable Task: " + message + " on thread " + Thread.currentThread().getName() + " -  Scheduling new task to start in {} seconds", SECONDS_BETWEEN_TASKS);
-                schedule(SECONDS_BETWEEN_TASKS);
+                log.info("Finished Runnable Task: " + message + " on thread " + Thread.currentThread().getName() + " -  Scheduling new task to start in {} seconds", TASK_INTERVAL__SECONDS);
+                schedule(TASK_INTERVAL__SECONDS);
 
 
             } else {

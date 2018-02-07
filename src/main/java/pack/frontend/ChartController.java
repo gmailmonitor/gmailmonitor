@@ -53,7 +53,7 @@ public class ChartController {
 
 
         // log.error("Calling System.exit()"); // Used in experiments to save sessions through restart
-        // System.exit(0); // TODO what alternative to System.exit() allows session data to be saved?
+        // System.exit(0); // Unclear why this persists session information to disk
 
         Integer userIdLoggedIn = getUserIdLoggedIn(session); //Integer expected
         if (userIdLoggedIn == null) {
@@ -89,15 +89,12 @@ public class ChartController {
         ScheduledFuture scheduledFuture = taskService.getScheduledFuture();
         if (scheduledFuture == null) {
             log.info("Scheduled Task:  None scheduled");
-        } else {
 
+        } else {
             log.info("Scheduled Task:  cancelled?: " + scheduledFuture.isCancelled() + " done?: " + scheduledFuture.isDone());
             long delaySeconds = scheduledFuture.getDelay(TimeUnit.SECONDS);
             String delayMinutes = String.format("%.2f", (double) delaySeconds / 60);
             model.addAttribute(ATTRIBUTE__TASK_DELAY, delayMinutes + " min");
-
-            // TODO what does this do
-            // scheduledFuture.get(); // This one will be interesting
         }
 
         return TEMPLATE__CHART;
